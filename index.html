@@ -17,6 +17,11 @@
 <body>
   <main>
     <section id="view-home" hidden>
+      <div id="question-box" class="question" hidden>
+        <p class="eyebrow">Claude가 물어본 것</p>
+        <p id="question"></p>
+        <button id="answer" class="primary">답하기</button>
+      </div>
       <button id="open-write" class="primary big">쏟아내기</button>
       <div class="week-wrap">
         <div id="week" class="week" aria-label="최근 7일 기록"></div>
@@ -26,7 +31,7 @@
     </section>
 
     <section id="view-write" hidden>
-      <p class="eyebrow">지금 떠오르는 대로. 정리하지 않아도 돼요.</p>
+      <p id="write-prompt" class="eyebrow"></p>
       <textarea id="entry" placeholder="키보드의 🎤를 눌러 말해도 돼요"></textarea>
       <p id="write-error" class="error"></p>
       <div class="row">

@@ -52,6 +52,20 @@ h1 { font-size: 28px; margin: 0; }
 }
 #record-list { display: flex; flex-direction: column; }
 
+.question {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 22px 18px;
+  background: var(--surface);
+  border-left: 4px solid var(--accent);
+  border-radius: 20px;
+}
+.question[hidden] { display: none; }
+.question #question { margin: 0; font-size: 20px; line-height: 1.5; word-break: keep-all; }
+.question .primary { align-self: flex-start; }
+#write-prompt.asking { color: var(--text); font-size: 18px; word-break: keep-all; }
+
 .week-wrap { display: flex; flex-direction: column; gap: 6px; }
 .week { display: flex; gap: 10px; }
 .dot { width: 28px; height: 28px; border-radius: 50%; background: var(--dot); }

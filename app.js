@@ -32,10 +32,31 @@ async function loadHome() {
   }
   const total = inbox.length + done.length;
   $("#count").textContent = total ? `지금까지 ${total}번 남겼어요` : "";
-  await loadRecords(inbox, done);
+  const records = await loadRecords(inbox, done);
+  showQuestion(records);
 }
 
-// ---------- 쏟아내기 ----------
+// 가장 최근 기록에 답장이 달려 있으면, 그 답장의 마지막 질문을 맨 위에 띄운다.
+// 그 뒤에 새 기록을 남기면(답했든 아니든) 질문은 내려간다.
+function showQuestion(records) {
+  const latest = records[0];
+  const question = latest?.reply
+    ?.split("\n").map((l) => l.trim()).filter((l) => l.endsWith("?")).pop();
+  $("#question-box").hidden = !question;
+  $("#question").textContent = question ?? "";
+}
+
+// ---------- 쏟아내기 / 답하기 ----------
+function openWrite(question) {
+  show("write");
+  $("#write-error").textContent = "";
+  $("#write-prompt").textContent = question ?? "지금 떠오르는 대로. 정리하지 않아도 돼요.";
+  $("#write-prompt").classList.toggle("asking", Boolean(question));
+  $("#entry").dataset.question = question ?? "";
+  $("#entry").value = localStorage.getItem("draft") ?? "";
+  $("#entry").focus();
+}
+
 async function save() {
   const text = $("#entry").value.trim();
   if (!text) return;
@@ -44,7 +65,9 @@ async function save() {
   btn.textContent = "남기는 중…";
   try {
     const stamp = kstStamp();
-    await createFile(`inbox/${stamp}.md`, `# ${stamp}\n\n${text}\n`, `inbox: ${stamp}`);
+    const question = $("#entry").dataset.question;
+    const head = question ? `> 질문: ${question}\n\n` : "";
+    await createFile(`inbox/${stamp}.md`, `# ${stamp}\n\n${head}${text}\n`, `inbox: ${stamp}`);
     $("#entry").value = "";
     localStorage.removeItem("draft");
     show("saved");
@@ -67,12 +90,13 @@ async function loadRecords(inbox, done) {
   const files = [...inbox.map((f) => ({ ...f, dir: "inbox" })), ...done.map((f) => ({ ...f, dir: "inbox/done" }))]
     .sort((a, b) => b.name.localeCompare(a.name))
     .slice(0, 30);
-  const cards = await Promise.all(files.map(async (f) => {
+  const records = await Promise.all(files.map(async (f) => {
     const [body, reply] = await Promise.all([readText(`${f.dir}/${f.name}`), readText(`replies/${f.name}`)]);
-    return entryCard(f.name, body, reply);
+    return { name: f.name, body, reply };
   }));
-  list.replaceChildren(...cards);
-  if (!cards.length) list.append(empty("아직 남긴 기록이 없어요. 넘칠 때 쏟아내 주세요."));
+  list.replaceChildren(...records.map((r) => entryCard(r.name, r.body, r.reply)));
+  if (!records.length) list.append(empty("아직 남긴 기록이 없어요. 넘칠 때 쏟아내 주세요."));
+  return records;
 }
 
 function entryCard(name, body, reply) {
@@ -139,12 +163,8 @@ document.querySelectorAll("[data-tab]").forEach((b) =>
     show(b.dataset.tab);
     loadLetters();
   }));
-$("#open-write").addEventListener("click", () => {
-  show("write");
-  $("#write-error").textContent = "";
-  $("#entry").value = localStorage.getItem("draft") ?? "";
-  $("#entry").focus();
-});
+$("#open-write").addEventListener("click", () => openWrite());
+$("#answer").addEventListener("click", () => openWrite($("#question").textContent));
 $("#entry").addEventListener("input", (e) => localStorage.setItem("draft", e.target.value));
 $("#cancel").addEventListener("click", () => show("home"));
 $("#save").addEventListener("click", save);
