@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>숨</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="숨">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#f6f3ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#16151a" media="(prefers-color-scheme: dark)">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <main>
+    <section id="view-home" hidden>
+      <p class="eyebrow">오늘의 한 문장</p>
+      <blockquote id="card" class="card">…</blockquote>
+      <div class="week-wrap">
+        <div id="week" class="week" aria-label="최근 7일 기록"></div>
+        <p id="count" class="muted"></p>
+        <p id="pending" class="muted"></p>
+      </div>
+      <button id="open-write" class="primary big">쏟아내기</button>
+    </section>
+
+    <section id="view-write" hidden>
+      <p class="eyebrow">지금 떠오르는 대로. 정리하지 않아도 돼요.</p>
+      <textarea id="entry" placeholder="키보드의 🎤를 눌러 말해도 돼요"></textarea>
+      <p id="write-error" class="error"></p>
+      <div class="row">
+        <button id="cancel" class="ghost">닫기</button>
+        <button id="save" class="primary">남기기</button>
+      </div>
+    </section>
+
+    <section id="view-saved" hidden>
+      <p class="eyebrow">남겼어요. 집에서 같이 볼게요.</p>
+      <blockquote id="saved-line" class="card"></blockquote>
+      <button id="saved-home" class="primary">돌아가기</button>
+    </section>
+
+    <section id="view-records" hidden>
+      <h1>기록</h1>
+      <div id="record-list"></div>
+    </section>
+
+    <section id="view-letters" hidden>
+      <h1>편지함</h1>
+      <div id="letter-list"></div>
+    </section>
+
+    <section id="view-setup" hidden>
+      <h1>처음 한 번만</h1>
+      <p class="muted">개인 GitHub에서 만든 토큰을 붙여넣어 주세요. 이 폰에만 저장돼요.</p>
+      <input id="token" type="password" autocomplete="off" placeholder="github_pat_…">
+      <p id="setup-error" class="error"></p>
+      <button id="connect" class="primary">연결하기</button>
+    </section>
+  </main>
+
+  <nav id="tabbar" hidden>
+    <button data-tab="home">홈</button>
+    <button data-tab="records">기록</button>
+    <button data-tab="letters">편지함</button>
+  </nav>
+</body>
+</html>
