@@ -50,6 +50,7 @@ h1 { font-size: 28px; margin: 0; }
   line-height: 1.5;
   word-break: keep-all;
 }
+#record-list { display: flex; flex-direction: column; }
 
 .week-wrap { display: flex; flex-direction: column; gap: 6px; }
 .week { display: flex; gap: 10px; }

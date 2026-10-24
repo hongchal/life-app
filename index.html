@@ -17,14 +17,12 @@
 <body>
   <main>
     <section id="view-home" hidden>
-      <p class="eyebrow">오늘의 한 문장</p>
-      <blockquote id="card" class="card">…</blockquote>
+      <button id="open-write" class="primary big">쏟아내기</button>
       <div class="week-wrap">
         <div id="week" class="week" aria-label="최근 7일 기록"></div>
         <p id="count" class="muted"></p>
-        <p id="pending" class="muted"></p>
       </div>
-      <button id="open-write" class="primary big">쏟아내기</button>
+      <div id="record-list"></div>
     </section>
 
     <section id="view-write" hidden>
@@ -38,14 +36,8 @@
     </section>
 
     <section id="view-saved" hidden>
-      <p class="eyebrow">남겼어요. 집에서 같이 볼게요.</p>
-      <blockquote id="saved-line" class="card"></blockquote>
+      <p class="card">남겼어요.<br>집에서 같이 볼게요.</p>
       <button id="saved-home" class="primary">돌아가기</button>
-    </section>
-
-    <section id="view-records" hidden>
-      <h1>기록</h1>
-      <div id="record-list"></div>
     </section>
 
     <section id="view-letters" hidden>
@@ -63,8 +55,7 @@
   </main>
 
   <nav id="tabbar" hidden>
-    <button data-tab="home">홈</button>
-    <button data-tab="records">기록</button>
+    <button data-tab="home">기록</button>
     <button data-tab="letters">편지함</button>
   </nav>
 </body>

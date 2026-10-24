@@ -1,7 +1,7 @@
 import { tokenStore, listMarkdown, readText, createFile, checkToken } from "./github.js";
 
 const $ = (sel) => document.querySelector(sel);
-const views = ["home", "write", "saved", "records", "letters", "setup"];
+const views = ["home", "write", "saved", "letters", "setup"];
 
 function show(name) {
   views.forEach((v) => ($(`#view-${v}`).hidden = v !== name));
@@ -17,15 +17,8 @@ function kstStamp(date = new Date()) {
 }
 const dayOf = (name) => name.slice(0, 10);
 
-// ---------- 홈 ----------
+// ---------- 홈: 최근 7일 + 내 기록과 Claude 답장 ----------
 async function loadHome() {
-  const cardsText = await readText("app/cards.json");
-  const cards = cardsText ? JSON.parse(cardsText) : [];
-  if (cards.length) {
-    const today = Number(kstStamp().slice(0, 10).replace(/-/g, ""));
-    $("#card").textContent = cards[today % cards.length];
-  }
-
   const [inbox, done] = await Promise.all([listMarkdown("inbox"), listMarkdown("inbox/done")]);
   const days = new Set([...inbox, ...done].map((f) => dayOf(f.name)));
   const dots = $("#week");
@@ -37,8 +30,9 @@ async function loadHome() {
     dot.title = d;
     dots.append(dot);
   }
-  $("#count").textContent = `지금까지 ${inbox.length + done.length}번 남겼어요`;
-  $("#pending").textContent = inbox.length ? `집에서 같이 볼 기록 ${inbox.length}개` : "";
+  const total = inbox.length + done.length;
+  $("#count").textContent = total ? `지금까지 ${total}번 남겼어요` : "";
+  await loadRecords(inbox, done);
 }
 
 // ---------- 쏟아내기 ----------
@@ -53,7 +47,6 @@ async function save() {
     await createFile(`inbox/${stamp}.md`, `# ${stamp}\n\n${text}\n`, `inbox: ${stamp}`);
     $("#entry").value = "";
     localStorage.removeItem("draft");
-    $("#saved-line").textContent = $("#card").textContent;
     show("saved");
   } catch (e) {
     alertInline(`저장하지 못했어요 (${e.message}). 글은 그대로 남아 있어요.`);
@@ -67,20 +60,19 @@ function alertInline(msg) {
   $("#write-error").textContent = msg;
 }
 
-// ---------- 기록 (내 글 + Claude 답장) ----------
-async function loadRecords() {
+// 답장은 replies/<같은 파일명>.md 에 Claude가 남긴다.
+async function loadRecords(inbox, done) {
   const list = $("#record-list");
   list.replaceChildren(loading());
-  const [inbox, done] = await Promise.all([listMarkdown("inbox"), listMarkdown("inbox/done")]);
   const files = [...inbox.map((f) => ({ ...f, dir: "inbox" })), ...done.map((f) => ({ ...f, dir: "inbox/done" }))]
     .sort((a, b) => b.name.localeCompare(a.name))
-    .slice(0, 20);
-  list.replaceChildren();
-  if (!files.length) return list.append(empty("아직 남긴 기록이 없어요."));
-  for (const f of files) {
+    .slice(0, 30);
+  const cards = await Promise.all(files.map(async (f) => {
     const [body, reply] = await Promise.all([readText(`${f.dir}/${f.name}`), readText(`replies/${f.name}`)]);
-    list.append(entryCard(f.name, body, reply));
-  }
+    return entryCard(f.name, body, reply);
+  }));
+  list.replaceChildren(...cards);
+  if (!cards.length) list.append(empty("아직 남긴 기록이 없어요. 넘칠 때 쏟아내 주세요."));
 }
 
 function entryCard(name, body, reply) {
@@ -137,16 +129,15 @@ async function connect() {
 
 function start() {
   show("home");
-  loadHome().catch((e) => ($("#card").textContent = `불러오지 못했어요 (${e.message})`));
+  loadHome().catch((e) => $("#record-list").replaceChildren(empty(`불러오지 못했어요 (${e.message})`)));
 }
 
 // ---------- 이벤트 ----------
 document.querySelectorAll("[data-tab]").forEach((b) =>
   b.addEventListener("click", () => {
+    if (b.dataset.tab === "home") return start();
     show(b.dataset.tab);
-    if (b.dataset.tab === "home") loadHome();
-    if (b.dataset.tab === "records") loadRecords();
-    if (b.dataset.tab === "letters") loadLetters();
+    loadLetters();
   }));
 $("#open-write").addEventListener("click", () => {
   show("write");
